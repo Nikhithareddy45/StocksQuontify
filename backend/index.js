@@ -28,8 +28,8 @@ app.use('/api/stocks', stockRoutes);
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ✅ For all other routes, serve the frontend index.html
-app.get('/:path(*)', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 // Error handler
