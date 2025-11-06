@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Watchlist</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      background: #f6f8fa;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 { text-align: center; color: #222; }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    ul { list-style: none; padding: 0; }
+    li {
+      background: white;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>📈 Stock Watchlist</h1>
+
+  <input type="text" id="symbol" placeholder="Enter stock symbol (A–Z) of max 5 characters" maxlength="5" />
+  <button id="addBtn">Add Stock</button>
+
+  <h3>Your Watchlist:</h3>
+  <ul id="stockList"></ul>
+
+  <script>
+    // ⚙️ Change this to your deployed backend URL:
+    const API_BASE = "http://localhost:3000/api/stocks";
+
+    const symbolInput = document.getElementById("symbol");
+    const addBtn = document.getElementById("addBtn");
+    const stockList = document.getElementById("stockList");
+
+    async function loadStocks() {
+      stockList.innerHTML = "<li>Loading...</li>";
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        stockList.innerHTML = "";
+        data.stocks.forEach(symbol => {
+          const li = document.createElement("li");
+          li.textContent = symbol;
+          stockList.appendChild(li);
+        });
+      } catch (err) {
+        stockList.innerHTML = "<li style='color:red;'>Error loading stocks</li>";
+      }
+    }
+
+    async function addStock() {
+      const symbol = symbolInput.value.trim().toUpperCase();
+      if (!symbol) return alert("Enter a stock symbol");
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbol })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ Added: " + symbol);
+          symbolInput.value = "";
+          loadStocks();
+        } else {
+          alert("❌ Error: " + (data.error || data.errors?.[0]?.msg));
+        }
+      } catch (err) {
+        alert("Server error");
+      }
+    }
+
+    addBtn.addEventListener("click", addStock);
+    loadStocks();
+  </script>
+</body>
+</html>
